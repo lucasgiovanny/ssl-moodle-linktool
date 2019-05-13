@@ -1,9 +1,6 @@
-<?php
-  require_once("connection.php");
-?>
 <html>
   <head>
-    <title>Ferramenta de URL - Moodledata</title>
+    <title>HTTP to HTTPS URL Checker Moodle</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   </head>
   <body>
@@ -11,29 +8,27 @@
     <div class="container">
       <div class="row">
         <div class="col-md-12">
-          <h1>Ferramenta de URL - Moodledata</h1>
+          <h1>HTTP to HTTPS URL Checker Moodle</h1>
         </div>
       </div>
       <div class="row">
-        <div class="col-md-2">
-          <ul class="nav nav-pills flex-column">
-            <li class="nav-item">
-              <a class="nav-link active" href="index.php">Início</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="config.php">Config</a>
-            </li>
-          </ul>
-        </div>
-        <div class="col-md-10">
-          <p>Faça o upload do arquivo <b>.txt</b> para dar início a geração do relatório</p>
-          <form action="" method="post">
-            <div class="form-group">
-              <label for="file">Arquivo</label>
-              <input class="form-control" type="file" name="file" value="">
-            </div>
-            <button type="submit" name="button" class="btn btn-primary">Gerar relatório</button>
-          </form>
+        <div class="col-md-12">
+          <p>The script is going to use the file <b>"report.txt"</b> present on root folder.</p> <br>
+          <?php
+
+          if (!file_exists("report.txt")) {
+
+            echo '<span class="text-danger">File <b>report.txt</b> not found.</span>';
+
+          } else{
+          ?>
+
+          <button type="submit" name="button" class="btn btn-primary">Generate report</button>
+
+          <?php
+          }
+          ?>
+
         </div>
       </div>
     </div>
