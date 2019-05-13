@@ -1,0 +1,8 @@
+[
+  {
+    "servername": "localhost",
+    "username": "root",
+    "password": "root",
+    "database": "moodle-3.5.1"
+  }
+]
