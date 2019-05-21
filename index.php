@@ -23,6 +23,7 @@
           } else{
 
             echo '<span class="text-success">File <b>report.txt</b> found.</span><br>';
+
           ?>
 
           <a href="report.php"><button type="submit" name="button" class="btn btn-primary">Generate report</button></a>

@@ -1,8 +1,8 @@
 [
   {
-    "servername": "localhost",
+    "servername": "qa.clbh4uda74od.us-east-1.rds.amazonaws.com",
     "username": "root",
-    "password": "root",
-    "database": "moodle-3.5.1"
+    "password": "z7syHHK0rwjlhYOizf0b",
+    "database": "avagen"
   }
 ]

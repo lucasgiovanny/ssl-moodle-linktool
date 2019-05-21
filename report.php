@@ -1,90 +1,89 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>HTTP to HTTPS URL Checker Moodle</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  </head>
-  <body>
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-12">
-          <h1>HTTP to HTTPS URL Checker Moodle - Report</h1>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-12">
 <?php
 
-  $jsonString = file_get_contents('db.json');
-  $data = json_decode($jsonString, true);
+ini_set('memory_limit','1024M');
 
-  $servername = $data[0]['servername'];
-  $username = $data[0]['username'];
-  $password = $data[0]['password'];
-  $dbname = $data[0]['database'];
+$time_start = microtime(true);
 
-  try {
+require_once('settings.config.php');
+require_once('vendor/autoload.php');
 
-      $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-      $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+use sslLinkTool\Files;
 
-      echo '<table class="js-dynamitable table table-striped table-bordered table-hover table-sm">';
-        echo '<thead class="thead-light">';
-          echo '<tr>';
-            echo '<th><b>File</b></th>';
-            echo '<th><b>Folder</b></th>';
-            echo '<th><b>Full URL</b></th>';
-            echo '<th><b>Domain</b></th>';
-            echo '<th><b>Course</b></th>';
-            echo '<th><b>Section</b></th>';
-            echo '<th><b>Activity</b></th>';
-          echo '</tr>';
-        echo '</thead>';
+$file = new sslLinkTool\Files($dbconfig);
 
-      $myfile = fopen("report.txt", "r") or die("Unable to open file!");
+$reportFile = fopen("report.txt", "r") or die("Unable to open report.txt file!");
 
+$comands = array();
 
-      while(!feof($myfile)) {
+while(!feof($reportFile)) {
 
-        $line = fgets($myfile);
+  $commands[] = fgets($reportFile);
 
-        if(strpos($line, "Binary") === false && $line != ""){
+}
 
-          $explode = explode(":", $line);
+fclose($reportFile);
 
-          $explode2 = explode("/", $explode[0]);
+echo '<table border=1>';
+echo '<thead class="thead-light">';
+  echo '<tr>';
+    echo '<th><b>File moodledata</b></th>';
+    echo '<th><b>File</b></th>';
+    echo '<th><b>Folder</b></th>';
+    echo '<th><b>Full URL</b></th>';
+    echo '<th><b>Domain</b></th>';
+    echo '<th><b>Linha</b></th>';
+    echo '<th><b>Course</b></th>';
+    echo '<th><b>Section</b></th>';
+    echo '<th><b>Activity</b></th>';
+  echo '</tr>';
 
-          $explode3 = explode("/", $explode[3]);
+$total = sizeof($commands);
+// $total = "20";
 
-          echo '<tr>';
-            echo '<td>' . $explode2[3] . '</td>';
-            echo '<td>moodledata/' . $explode2[1] . '/' . $explode2[2] . '/</td>';
-            echo '<td>' . $explode[2] . $explode[3] . "</td>";
-            echo '<td>' . $explode3[2] . "</td>";
-            echo '<td></td>';
-            echo '<td></td>';
-            echo '<td></td>';
-          echo '</tr>';
+for ($i=0; $i < $total; $i++) {
 
-        }
+  $line = $commands[$i];
 
-      }
-      fclose($myfile);
+  $hash = $file->getFileHash($line);
 
-      echo '</table>';
+    if($hash != NULL){
+
+      $hashs[] = $hash;
 
   }
-  catch(PDOException $e) {
-      echo "Error: " . $e->getMessage();
-  }
-  $conn = null;
-?>
-    </div>
-  </div>
-</div>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-  </body>
-</html>
+
+}
+
+$filterHashs = array_unique($hashs);
+$fileData = $file->getFileData($filterHashs, $total);
+
+foreach ($fileData as $key => $value) {
+
+    echo '<tr>';
+
+    echo '<td></td>';
+    echo '<td></td>';
+    echo '<td></td>';
+    echo '<td></td>';
+    echo '<td></td>';
+    echo '<td></td>';
+    echo '<td>'.utf8_encode($fileData[$key]["coursename"]).'</td>';
+    echo '<td>'.utf8_encode($fileData[$key]["sectionname"]).'</td>';
+    echo '<td>'.utf8_encode($fileData[$key]["activityname"]).'</td>';
+
+    // if($fileData[$key]["contextlevel"] == 70){
+    //   $activityName = $file->activityName($fileData[$key]["cmid"]);
+    //   echo '<td>'.utf8_encode($activityName).'</td>';
+    // } else{
+    //   echo '<td></td>';
+    // }
+
+    echo '</tr>';
+
+}
+
+echo '</table>';
+
+$time_end = microtime(true);
+$execution_time = ($time_end - $time_start)/60;
+echo '<b>Total Execution Time:</b> '.round($execution_time, 2, PHP_ROUND_HALF_DOWN).' Mins';
