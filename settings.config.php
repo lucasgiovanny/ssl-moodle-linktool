@@ -12,7 +12,7 @@
 // );
 
 $dbconfig   = array(
-  'dbname' => 'avarh-producao',
+  'dbname' => 'cursoforum',
   'user' => 'root',
   'password' => 'z7syHHK0rwjlhYOizf0b',
   'host' => 'qa.clbh4uda74od.us-east-1.rds.amazonaws.com',

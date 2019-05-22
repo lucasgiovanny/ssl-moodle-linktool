@@ -1,15 +1,19 @@
 <?php
 
+ob_implicit_flush();
 ini_set('memory_limit','1024M');
 
 $time_start = microtime(true);
-
 require_once('settings.config.php');
 require_once('vendor/autoload.php');
 
 use sslLinkTool\Files;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 $file = new sslLinkTool\Files($dbconfig);
+$spreadsheet = new Spreadsheet();
+$sheet = $spreadsheet->getActiveSheet();
 
 $reportFile = fopen("report.txt", "r") or die("Unable to open report.txt file!");
 
@@ -23,19 +27,14 @@ while(!feof($reportFile)) {
 
 fclose($reportFile);
 
-echo '<table border=1>';
-echo '<thead class="thead-light">';
-  echo '<tr>';
-    echo '<th><b>File moodledata</b></th>';
-    echo '<th><b>File</b></th>';
-    echo '<th><b>Folder</b></th>';
-    echo '<th><b>Full URL</b></th>';
-    echo '<th><b>Domain</b></th>';
-    echo '<th><b>Linha</b></th>';
-    echo '<th><b>Course</b></th>';
-    echo '<th><b>Section</b></th>';
-    echo '<th><b>Activity</b></th>';
-  echo '</tr>';
+  $sheet->setCellValue('A1', 'File moodledata');
+  $sheet->setCellValue('B1', 'File');
+  $sheet->setCellValue('C1', 'Folder');
+  $sheet->setCellValue('D1', 'Full URL');
+  $sheet->setCellValue('E1', 'Domain');
+  $sheet->setCellValue('F1', 'Course');
+  $sheet->setCellValue('G1', 'Section');
+  $sheet->setCellValue('H1', 'Activity');
 
 $total = sizeof($commands);
 // $total = "20";
@@ -55,35 +54,45 @@ for ($i=0; $i < $total; $i++) {
 }
 
 $filterHashs = array_unique($hashs);
+
 $fileData = $file->getFileData($filterHashs, $total);
+
+$sheetline = 2;
 
 foreach ($fileData as $key => $value) {
 
-    echo '<tr>';
+    $sheet->setCellValue('A'.$sheetline.'', ''.utf8_encode($fileData[$key]["contenthash"]).'');
+    $sheet->setCellValue('B'.$sheetline.'', ''.utf8_encode($fileData[$key]["filename"]).'');
+    $sheet->setCellValue('C'.$sheetline.'', '');
+    $sheet->setCellValue('D'.$sheetline.'', '');
+    $sheet->setCellValue('E'.$sheetline.'', '');
+    $sheet->setCellValue('F'.$sheetline.'', ''.utf8_encode($fileData[$key]["coursename"]).'');
+    $sheet->setCellValue('G'.$sheetline.'', ''.utf8_encode($fileData[$key]["sectionname"]).'');
+    $sheet->setCellValue('H'.$sheetline.'', ''.utf8_encode($fileData[$key]["activityname"]).'');
 
-    echo '<td></td>';
-    echo '<td></td>';
-    echo '<td></td>';
-    echo '<td></td>';
-    echo '<td></td>';
-    echo '<td></td>';
-    echo '<td>'.utf8_encode($fileData[$key]["coursename"]).'</td>';
-    echo '<td>'.utf8_encode($fileData[$key]["sectionname"]).'</td>';
-    echo '<td>'.utf8_encode($fileData[$key]["activityname"]).'</td>';
-
-    // if($fileData[$key]["contextlevel"] == 70){
-    //   $activityName = $file->activityName($fileData[$key]["cmid"]);
-    //   echo '<td>'.utf8_encode($activityName).'</td>';
-    // } else{
-    //   echo '<td></td>';
-    // }
-
-    echo '</tr>';
+    $sheetline++;
 
 }
 
-echo '</table>';
+$spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+$spreadsheet->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
+$spreadsheet->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+$spreadsheet->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
+$spreadsheet->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
+$spreadsheet->getActiveSheet()->getColumnDimension('F')->setAutoSize(true);
+$spreadsheet->getActiveSheet()->getColumnDimension('G')->setAutoSize(true);
+$spreadsheet->getActiveSheet()->getColumnDimension('H')->setAutoSize(true);
+
+$spreadsheet->getActiveSheet()->setAutoFilter(
+    $spreadsheet->getActiveSheet()
+        ->calculateWorksheetDimension()
+);
+
+$writer = new Xlsx($spreadsheet);
+$writer->save('export/report.xlsx');
 
 $time_end = microtime(true);
 $execution_time = ($time_end - $time_start)/60;
-echo '<b>Total Execution Time:</b> '.round($execution_time, 2, PHP_ROUND_HALF_DOWN).' Mins';
+echo '<br>Total Execution Time:</b> '.round($execution_time, 2, PHP_ROUND_HALF_DOWN).' Mins';
+echo '<br><br><span class="text-success">Done. Saved into <b>export/</b> folder</span>';
+echo '<br><a href="export/report.xlsx">Click here to download report</a>';
