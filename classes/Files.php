@@ -3,6 +3,7 @@
 namespace sslLinkTool;
 
 use Doctrine\DBAL\DriverManager;
+use Medoo\Medoo;
 
 /**
  * @author Lucas Giovanny <lucasgiovanny@gmail.com>
@@ -19,10 +20,9 @@ class Files
 
     $this->dbconfig = $dbconfig;
 
-    $config = new \Doctrine\DBAL\Configuration();
-    $conn = \Doctrine\DBAL\DriverManager::getConnection($this->dbconfig, $config);
+    $database = new Medoo($this->dbconfig);
 
-    $this->conn = $conn;
+    $this->conn = $database;
 
     $this->sqlActivity = $this->sqlMount();
 
@@ -31,7 +31,7 @@ class Files
   private function allModules() {
 
     $sql = "SELECT name FROM mdl_modules";
-    $stmt = $this->conn->fetchAll($sql);
+    $stmt = $this->conn->query($sql)->fetchAll();
 
     return $stmt;
 
@@ -133,7 +133,7 @@ class Files
             LEFT JOIN (".$sqlActivity.") un ON CASE WHEN c.contextlevel = 70 THEN un.activityid WHEN c.contextlevel = 50 THEN un.courseid ELSE NULL END = c.instanceid
             WHERE f.contenthash IN (".$hashsImplode.")";
 
-    $stmt = $this->conn->fetchAll($sql);
+    $stmt = $this->conn->query($sql)->fetchAll();
 
     return $stmt;
 

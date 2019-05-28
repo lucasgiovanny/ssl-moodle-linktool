@@ -1,7 +1,7 @@
 {
     "require": {
         "phpoffice/phpspreadsheet": "^1.6",
-        "doctrine/dbal": "^2.9"
+        "catfan/medoo": "^1.6"
     },
     "autoload": {
         "psr-4": {

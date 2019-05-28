@@ -5,9 +5,9 @@
  */
 
 $dbconfig   = array(
-  'dbname' => 'moodle-3.5.1',
-  'user' => 'root',
-  'password' => 'root',
-  'host' => 'localhost',
-  'driver' => 'pdo_mysql',
+  'database_type' => 'mysql',
+  'database_name' => 'moodle-3.5.1',
+  'server' => 'localhost',
+  'username' => 'root',
+  'password' => 'root'
 );
