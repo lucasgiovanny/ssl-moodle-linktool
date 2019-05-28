@@ -3,3 +3,4 @@ report*.txt
 db_*.json
 vendor/
 cursoforum.*
+export/

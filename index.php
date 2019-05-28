@@ -75,6 +75,7 @@
         url: "report.php",
         beforeSend: function(){
           $(".loading").show();
+          $("#result").html('');
         },
         success: function(result){
           $(".loading").hide();

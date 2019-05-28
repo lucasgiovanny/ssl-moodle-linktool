@@ -65,6 +65,43 @@ class Files
     return $sqlActivity;
   }
 
+  function getFileURL($line){
+
+    if(strpos($line, "Binary") === false && $line != ""){
+
+      $explodeFirst = explode(":", $line);
+
+      $hash = $explodeFirst[2] . ':' . $explodeFirst[3];
+
+    } else {
+
+      $hash = NULL;
+
+    }
+
+    return $hash;
+
+  }
+
+  function getDomainURL($line){
+
+    if(strpos($line, "Binary") === false && $line != ""){
+
+      $explodeFirst = explode(":", $line);
+      $explodeSecond = explode("/", $explodeFirst[3]);
+
+      $hash = $explodeFirst[2] . '://' . $explodeSecond[2];
+
+    } else {
+
+      $hash = NULL;
+
+    }
+
+    return $hash;
+
+  }
+
   function getFileHash($line){
 
     if(strpos($line, "Binary") === false && $line != ""){
@@ -95,8 +132,6 @@ class Files
             INNER JOIN mdl_context c ON f.contextid = c.id
             LEFT JOIN (".$sqlActivity.") un ON CASE WHEN c.contextlevel = 70 THEN un.activityid WHEN c.contextlevel = 50 THEN un.courseid ELSE NULL END = c.instanceid
             WHERE f.contenthash IN (".$hashsImplode.")";
-
-          // echo $sql;
 
     $stmt = $this->conn->fetchAll($sql);
 
