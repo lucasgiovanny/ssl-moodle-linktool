@@ -2,7 +2,10 @@
 
 ob_implicit_flush();
 ini_set('memory_limit','-1');
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 date_default_timezone_set('America/Sao_Paulo');
+set_time_limit(0);
 
 $time_start = microtime(true);
 require_once('settings.config.php');
