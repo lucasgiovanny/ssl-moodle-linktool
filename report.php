@@ -1,7 +1,7 @@
 <?php
 
 ob_implicit_flush();
-ini_set('memory_limit','1024M');
+ini_set('memory_limit','-1');
 date_default_timezone_set('America/Sao_Paulo');
 
 $time_start = microtime(true);
