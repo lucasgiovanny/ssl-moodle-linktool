@@ -14,7 +14,6 @@ class Files
 
   private $dbconfig = array();
   private $conn;
-  private $sqlActivity;
 
   function __construct($dbconfig){
 
@@ -24,45 +23,6 @@ class Files
 
     $this->conn = $database;
 
-    $this->sqlActivity = $this->sqlMount();
-
-  }
-
-  private function allModules() {
-
-    $sql = "SELECT name FROM mdl_modules";
-    $stmt = $this->conn->query($sql)->fetchAll();
-
-    return $stmt;
-
-  }
-
-  private function sqlMount(){
-
-    $allModules = $this->allModules();
-
-    $sqlActivity = "SELECT cr1.id as courseid, cr1.fullname as coursename, s1.id as sectionid, s1.name as sectionname, cm1.id as activityid, CASE ";
-
-    foreach($allModules as $key => $module){
-
-      $sqlActivity .= "WHEN m{$key}.name IS NOT NULL THEN m{$key}.name ";
-
-    }
-
-    $sqlActivity .= "ELSE NULL END AS activityname ";
-    $sqlActivity .= "FROM mdl_course_modules AS cm1 ";
-    $sqlActivity .= "INNER JOIN mdl_course AS cr1 ON cr1.id = cm1.course ";
-    $sqlActivity .= "INNER JOIN mdl_course_sections AS s1 ON cm1.section = s1.id ";
-    $sqlActivity .= "INNER JOIN mdl_context AS ctx ON ctx.contextlevel = 70 AND ctx.instanceid = cm1.id ";
-    $sqlActivity .= "INNER JOIN mdl_modules AS mdl ON cm1.module = mdl.id ";
-
-    foreach($allModules as $key => $module){
-
-      $sqlActivity .= "LEFT JOIN mdl_{$module['name']} AS m{$key} ON mdl.name = '{$module['name']}' AND cm1.instance = m{$key}.id ";
-
-    }
-
-    return $sqlActivity;
   }
 
   function getFileURL($line){
@@ -125,12 +85,37 @@ class Files
 
     $hashsImplode = sprintf("'%s'", implode("', '",$hashs));
 
-    $sqlActivity = $this->sqlActivity;
-
-    $sql = "SELECT f.id, f.contenthash, f.filename, un.coursename, un.sectionname, un.activityname
+    $sql = "SELECT f.id, f.contenthash, f.filename,
+            	CASE
+            		WHEN cr.fullname IS NOT NULL THEN cr.fullname
+            		WHEN cr.fullname IS NULL THEN c.contextlevel
+            	END as coursename,
+            	CASE
+            		WHEN cs.name IS NOT NULL THEN cs.name
+            		WHEN cs.name IS NULL THEN 'Legacy'
+            	END as sectionname,
+              CASE
+            		WHEN c.contextlevel = 70 THEN c.instanceid
+            		ELSE NULL
+            	END as activityid
             FROM mdl_files f
             INNER JOIN mdl_context c ON f.contextid = c.id
-            LEFT JOIN (".$sqlActivity.") un ON CASE WHEN c.contextlevel = 70 THEN un.activityid WHEN c.contextlevel = 50 THEN un.courseid ELSE NULL END = c.instanceid
+            LEFT JOIN mdl_course_modules cm ON
+            	CASE
+            		WHEN c.contextlevel = 70 THEN c.instanceid = cm.id
+            		ELSE NULL
+            	END
+            LEFT JOIN mdl_course cr ON
+            	CASE
+            		WHEN c.contextlevel = 70 THEN cm.course = cr.id
+            		WHEN c.contextlevel = 50 THEN c.instanceid = cr.id
+            	ELSE NULL
+            	END
+            LEFT JOIN mdl_course_sections cs ON
+            	CASE
+            		WHEN c.contextlevel = 70 THEN cm.section = cs.id
+            	ELSE NULL
+            	END
             WHERE f.contenthash IN (".$hashsImplode.")";
 
     $stmt = $this->conn->query($sql)->fetchAll();

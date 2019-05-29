@@ -9,11 +9,11 @@ This tool helps you to find all the URLs in your moodledata folder.
 1. Run the following bash script
 
    `grep -Eorn "(http|https)://[a-zA-Z0-9./?=_-]*" . > report.txt`
-   
+
 ## Configure the tool
 
-1. Open the file `db.json`
-1. Edit `servername`, `username`, `password` and `database` with you Moodle database connection
+1. Open the file `settings.config.php`
+1. Edit `database_type`, `database_name`, `server`, `username` and `password` with you Moodle database connection
 
 ## Generate the report
 
