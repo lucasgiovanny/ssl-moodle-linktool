@@ -85,44 +85,26 @@ class Files
 
     $hashsImplode = sprintf("'%s'", implode("', '",$hashs));
 
-    $sql = "SELECT f.id, f.contenthash, f.filename,
-            	CASE
-            		WHEN cr.fullname IS NOT NULL THEN cr.fullname
-            		WHEN cr.fullname IS NULL THEN c.contextlevel
-            	END as coursename,
-            	CASE
-            		WHEN cs.name IS NOT NULL THEN cs.name
-            		WHEN cs.name IS NULL THEN 'Legacy'
-            	END as sectionname,
-              CASE
-            		WHEN c.contextlevel = 70 THEN c.instanceid
-            		ELSE NULL
-            	END as activityid
+    $sql = "SELECT f.id, f.contenthash, f.component, f.filename, f.timecreated, f.timemodified, cr.fullname AS coursename, cr.id AS courseid, cs.name AS sectionname, cm.instance AS activityid
             FROM mdl_files f
-            INNER JOIN mdl_context c ON f.contextid = c.id
-            LEFT JOIN mdl_course_modules cm ON
-            	CASE
-            		WHEN c.contextlevel = 70 THEN c.instanceid = cm.id
-            		ELSE NULL
-            	END
-            LEFT JOIN mdl_course cr ON
-            	CASE
-            		WHEN c.contextlevel = 70 THEN cm.course = cr.id
-            		WHEN c.contextlevel = 50 THEN c.instanceid = cr.id
-            	ELSE NULL
-            	END
-            LEFT JOIN mdl_course_sections cs ON
-            	CASE
-            		WHEN c.contextlevel = 70 THEN cm.section = cs.id
-            	ELSE NULL
-            	END
-            WHERE f.contenthash IN (".$hashsImplode.")";
+            INNER JOIN mdl_context ct ON f.contextid = ct.id
+            INNER JOIN
+            	mdl_course_modules cm
+            ON ct.instanceid = cm.id
+            INNER JOIN mdl_course cr ON cm.course = cr.id
+            left JOIN mdl_course_sections cs ON cm.section = cs.id
+            WHERE ct.contextlevel = 70 AND f.contenthash IN (".$hashsImplode.")
+            UNION
+            SELECT f.id, f.contenthash, f.contextid, f.filename, f.timecreated, f.timemodified, cr.fullname AS coursename, cr.id AS courseid, 'Legacy' AS sectionname, null AS activityid
+            FROM mdl_files f
+            INNER JOIN mdl_context ct ON f.contextid = ct.id
+            INNER JOIN mdl_course cr ON ct.instanceid = cr.id
+            WHERE ct.contextlevel = 50 AND f.contenthash IN (".$hashsImplode.")";
 
     $stmt = $this->conn->query($sql)->fetchAll();
 
     return $stmt;
 
   }
-
 
 }
